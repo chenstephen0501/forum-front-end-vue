@@ -6,7 +6,7 @@
     </h1>
     <hr>
     <div class="row text-center">
-      <UsersTopCard v-for="user in users" :key="user.id" :initial-user="user"/>
+      <UsersTopCard v-for="user in users" :key="user.id" :initial-user="user" />
     </div>
   </div>
 </template>
@@ -14,50 +14,8 @@
 <script>
 import NavTabs from '@/components/NavTabs.vue';
 import UsersTopCard from '@/components/UsersTopCard.vue';
-
-const dummyData = {
-    "users": [
-        {
-            "id": 1,
-            "name": "root",
-            "email": "root@example.com",
-            "password": "$2a$10$k4ty8W0Nip0Zi1wLOjPL4OIzvnFuWAc4Butn7zi5GqXlixncVLuhi",
-            "isAdmin": true,
-            "image": null,
-            "createdAt": "2025-07-21T13:58:12.000Z",
-            "updatedAt": "2025-07-21T13:58:12.000Z",
-            "Followers": [],
-            "FollowerCount": 0,
-            "isFollowed": false
-        },
-        {
-            "id": 2,
-            "name": "user1",
-            "email": "user1@example.com",
-            "password": "$2a$10$QdVtXT6hbOije6fHPLPYmeTPE6fTvglOoNlgf0bwy0Wixem45uSp.",
-            "isAdmin": false,
-            "image": null,
-            "createdAt": "2025-07-21T13:58:12.000Z",
-            "updatedAt": "2025-07-21T13:58:12.000Z",
-            "Followers": [],
-            "FollowerCount": 0,
-            "isFollowed": false
-        },
-        {
-            "id": 3,
-            "name": "user2",
-            "email": "user2@example.com",
-            "password": "$2a$10$25pVxv//FHxtMdFOIfPK5uEjVOsZeEQQL2XEI/3GcpZ.NIff3DhdS",
-            "isAdmin": false,
-            "image": null,
-            "createdAt": "2025-07-21T13:58:12.000Z",
-            "updatedAt": "2025-07-21T13:58:12.000Z",
-            "Followers": [],
-            "FollowerCount": 0,
-            "isFollowed": false
-        }
-    ]
-}
+import usersAPI from '@/apis/users';
+import { Toast } from '@/utils/helpers';
 
 export default {
   name: 'UserTops',
@@ -74,9 +32,25 @@ export default {
     this.fetchUsersTop()
   },
   methods: {
-    fetchUsersTop() {
-      const { users } = dummyData
-      this.users = users
+    async fetchUsersTop() {
+      try {
+        const { data } = await usersAPI.getTopUsers()
+        this.users = data.users.map((user) => ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          followerCount: user.FollowerCount,
+          isFollowed: user.isFollowed
+        }))
+      } catch (error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '無法取得美食達人資料，請稍後再試'
+        })
+      }
     },
   },
 }

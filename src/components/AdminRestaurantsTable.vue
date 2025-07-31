@@ -27,15 +27,15 @@
           <router-link :to="{ name: 'admin-restaurant', params: { id: restaurant.id } }"
             class="btn btn-link">Show</router-link>
 
-          <router-link :to="{name: 'admin-restaurant-edit', params:{
-            id: restaurant.id
-          }}" class="btn btn-link">Edit</router-link>
+          <router-link :to="{
+            name: 'admin-restaurant-edit', params: {
+              id: restaurant.id
+            }
+          }" class="btn btn-link">Edit</router-link>
 
-          <!-- <button @click.stop.prevent="deleteRestaurant(restaurant.id)" type="button" class="btn btn-link">
-            Delete
-          </button> -->
-          <button @click.stop.prevent="handleDelteRestaurant(restaurant.id)" type="button" class="btn btn-link">
-            Delete
+          <button :disabled="deletingId === restaurant.id" @click.stop.prevent="handleDelteRestaurant(restaurant.id)"
+            type="button" class="btn btn-link">
+            {{ deletingId === restaurant.id ? '處理中' : 'Delete' }}
           </button>
         </td>
       </tr>
@@ -50,12 +50,13 @@ export default {
     restaurants: {
       type: Array,
       default: () => []
+    },
+    deletingId: {
+      type: [Number, String],
+      default: null
     }
   },
   methods: {
-    // deleteRestaurant(restaurantId) {
-    //   this.restaurants = this.restaurants.filter((rest) => rest.id !== restaurantId)
-    // }
     handleDelteRestaurant(restaurantId) {
       this.$emit('after-delete-restaurant', restaurantId)
     }

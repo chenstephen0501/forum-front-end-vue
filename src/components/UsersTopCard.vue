@@ -15,13 +15,13 @@
           >
         </a>
         <h2>{{user.name}}</h2>
-        <span class="badge badge-secondary">追蹤人數：{{user.FollowerCount}}</span>
+        <span class="badge badge-secondary">追蹤人數：{{user.followerCount}}</span>
         <p class="mt-3">
           <button
             v-if="user.isFollowed"
             type="button"
             class="btn btn-danger"
-            @click.prevent.stop="deleteFollowed()"
+            @click.prevent.stop="deleteFollowed(user.id)"
           >
             取消追蹤
           </button>
@@ -29,7 +29,7 @@
             v-else
             type="button"
             class="btn btn-primary"
-            @click.prevent.stop="addFollowed()"
+            @click.prevent.stop="addFollowed(user.id)"
           >
             追蹤
           </button>
@@ -38,6 +38,9 @@
 </template>
 
 <script>
+import usersAPI from '@/apis/users'
+import { Toast } from '@/utils/helpers'
+
 export default {
   name: 'UsersTopCard',
   props: {
@@ -52,13 +55,39 @@ export default {
     }
   },
   methods: {
-    addFollowed() {
+    async addFollowed(userId) {
+      try {
+        const { data } = await usersAPI.addFollowing(userId)
+      if (data.status !== 'success') {
+        throw new Error(data.message)
+      }
       this.user.isFollowed = true
-      this.user.FollowerCount++
+      this.user.followerCount++
+      } catch(error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '無法加入追蹤，請稍後再試'
+        })
+      }
     },
-    deleteFollowed(){
+    async deleteFollowed(userId){
+      try {
+        const { data } = await usersAPI.deleteFollowing(userId)
+      if (data.status !== 'success') {
+        throw new Error(data.message)
+      }
       this.user.isFollowed = false
-      this.user.FollowerCount--
+      this.user.followerCount--
+      } catch (error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '無法取消追蹤，請稍後再試'
+        })
+      }
     },
   }
 }

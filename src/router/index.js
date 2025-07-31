@@ -4,13 +4,23 @@ import NotFound from '../views/NotFound.vue'
 import SignIn from '../views/SignIn.vue'
 import Restaurants from '@/views/Restaurants.vue'
 
+import store from '@/store'
+
 Vue.use(VueRouter)
+
+const authorizeIsAdmin = (to, from, next) => {
+  const currentUser = store.state.currentUser
+  if (currentUser && !currentUser.isAdmin) {
+    next('not-found')
+  }
+  next()
+}
 
 const routes = [
   {
     path: '/',
     name: 'root',
-    component: Restaurants
+    redirect: '/signin'
   },
   {
     path: '/signin',
@@ -66,36 +76,43 @@ const routes = [
   {
     path: '/admin',
     redirect: '/admin/restaurants',
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/restaurants',
     name: 'admin-restaurants',
-    component: () => import('../views/AdminRestaurants.vue')
+    component: () => import('../views/AdminRestaurants.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/restaurants/new',
     name: 'admin-restaurant-new',
-    component: () => import('../views/AdminRestaurantNew.vue')
+    component: () => import('../views/AdminRestaurantNew.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/restaurants/:id/edit',
     name: 'admin-restaurant-edit',
-    component: () => import('../views/AdminRestaurantEdit.vue')
+    component: () => import('../views/AdminRestaurantEdit.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/restaurants/:id',
     name: 'admin-restaurant',
-    component: () => import('../views/AdminRestaurant.vue')
+    component: () => import('../views/AdminRestaurant.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/categories',
     name: 'admin-categories',
-    component: () => import('../views/AdminCategories.vue')
+    component: () => import('../views/AdminCategories.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '/admin/users',
     name: 'admin-users',
-    component: () => import('../views/AdminUsers.vue')
+    component: () => import('../views/AdminUsers.vue'),
+    beforeEnter: authorizeIsAdmin
   },
   {
     path: '*',
@@ -107,6 +124,32 @@ const routes = [
 const router = new VueRouter({
   linkExactActiveClass: 'active',
   routes
+})
+
+router.beforeEach(async (to, from, next) => {
+  try {
+    const tokenInLocalStorage = localStorage.getItem('token')
+    const tokenInState = store.state.token
+  let isAuthenticated = store.state.isAuthenticated
+  if (tokenInLocalStorage && tokenInLocalStorage !== tokenInState) {
+    isAuthenticated = await store.dispatch('fetchCurrentUser')
+  }
+  const pathWithoutAuthentication = ['sign-up', 'sign-in']
+
+  if(!isAuthenticated && !pathWithoutAuthentication.some(i => i === to.name)) {
+    next('/signin')
+    return
+  }
+
+  if (isAuthenticated && pathWithoutAuthentication.includes(to.name)) {
+    next('/restaurants')
+    return
+  }
+
+  next()
+  } catch (error) {
+    console.error('error', error)
+  }
 })
 
 export default router

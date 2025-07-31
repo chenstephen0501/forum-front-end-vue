@@ -6,20 +6,23 @@
     </div>
     <div class="d-flex align-items-center justify-content-between">
       <button type="button" class="btn btn-link" @click="$router.back()">回上一頁</button>
-      <button type="submit" class="btn btn-primary mr-0">
-        Submit
+      <button :disabled="isProcessing" type="submit" class="btn btn-primary mr-0">
+        {{ isProcessing ? '處理中...' : 'Submit'}}
       </button>
     </div>
   </form>
 </template>
 
 <script>
-import uuid4 from 'uuid4';
 export default {
   props: {
     restaurantId: {
       type: Number,
       required: true,
+    },
+    isProcessing: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -32,7 +35,6 @@ export default {
       // TODO: 向 API 發送 POST 請求
       // 伺服器新增 Comment 成功後...
       this.$emit('after-create-comment', {
-        commentId: uuid4(), // 尚未串接 API 暫時使用隨機的 id
         restaurantId: this.restaurantId,
         text: this.text
       })
@@ -42,3 +44,8 @@ export default {
 
 }
 </script>
+<style scoped>
+.form-group {
+  margin: 21px 0 8px;
+}
+</style>

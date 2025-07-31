@@ -6,8 +6,9 @@
 
     <div v-for="comment in restaurantComments" :key="comment.id">
       <blockquote class="blockquote mb-0">
-        <button v-if="currentUser.isAdmin" @click.stop.prevent="handlerDeleteButtonClick(comment.id)" type="button" class="btn btn-danger float-right">
-          Delete
+        <button v-if="currentUser.isAdmin" @click.stop.prevent="handlerDeleteButtonClick(comment.id)" type="button"
+          class="btn btn-danger float-right" :disabled="comment.id === deletingId">
+          {{ deletingId === comment.id ? '處理中...' : 'Delete'}}
         </button>
         <h3>
           <router-link :to="{ name: 'user', params: { id: comment.User.id } }">
@@ -45,7 +46,11 @@ export default {
     restaurantComments: {
       type: Array,
       required: true
-    }
+    },
+    deletingId: {
+      type: Number,
+      default: null
+    },
   },
   data() {
     return {
@@ -60,3 +65,18 @@ export default {
   }
 }
 </script>
+<style scoped>
+h2.my-4 {
+  margin-bottom: 1rem !important;
+  font-size: 18px;
+}
+
+h3 {
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.blockquote-footer {
+  font-size: 12.5px;
+}
+</style>

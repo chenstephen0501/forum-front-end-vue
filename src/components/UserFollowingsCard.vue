@@ -15,15 +15,20 @@
           height="60"
           class="mr-1"
         > -->
-        <img :src="`https://picsum.photos/60/60?random=${Math.floor(Math.random() * 1000)}`"
-        style="width: 60px;" class="mr-1">
+        <!-- <img :src="`https://picsum.photos/60/60?random=${Math.floor(Math.random() * 1000)}`"
+        style="width: 60px;" class="mr-1"> -->
+        <img :src="following.image | emptyUserImage"
+        style="width: 60px;">
       </router-link>
     </div>
   </div>
 </template>
 
 <script>
+import { emptyUserImageFilter } from '@/utils/mixins';
+
 export default {
+  mixins: [emptyUserImageFilter],
   props: {
     followings: {
       type: Array,

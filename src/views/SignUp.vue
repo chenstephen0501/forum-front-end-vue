@@ -1,6 +1,6 @@
 <template>
   <div class="container py-5">
-    <form class="w-100" @submit.prevent.stop="handleRegister">
+    <form class="w-100" @submit.stop.prevent="handleRegister">
       <div class="text-center mb-4">
         <h1 class="h3 mb-3 font-weight-normal">
           Sign Up
@@ -9,65 +9,29 @@
 
       <div class="form-label-group mb-2">
         <label for="name">Name</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          class="form-control"
-          placeholder="name"
-          autocomplete="username"
-          required
-          autofocus
-          v-model="name"
-        >
+        <input id="name" name="name" type="text" class="form-control" placeholder="name" autocomplete="username"
+          required autofocus v-model="name">
       </div>
 
       <div class="form-label-group mb-2">
         <label for="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          class="form-control"
-          placeholder="email"
-          autocomplete="email"
-          required
-          v-model="email"
-        >
+        <input id="email" name="email" type="email" class="form-control" placeholder="email" autocomplete="email"
+          required v-model="email">
       </div>
 
       <div class="form-label-group mb-3">
         <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          class="form-control"
-          placeholder="Password"
-          autocomplete="new-password"
-          required
-          v-model="password"
-        >
+        <input id="password" name="password" type="password" class="form-control" placeholder="Password"
+          autocomplete="new-password" required v-model="password">
       </div>
 
       <div class="form-label-group mb-3">
         <label for="password-check">Password Check</label>
-        <input
-          id="password-check"
-          name="passwordCheck"
-          type="password"
-          class="form-control"
-          placeholder="Password"
-          autocomplete="new-password"
-          required
-          v-model="passwordCheck"
-        >
+        <input id="password-check" name="passwordCheck" type="password" class="form-control" placeholder="Password"
+          autocomplete="new-password" required v-model="passwordCheck">
       </div>
 
-      <button
-        class="btn btn-lg btn-primary btn-block mb-3"
-        type="submit"
-      >
+      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">
         Submit
       </button>
 
@@ -88,6 +52,8 @@
 
 <script>
 /* eslint-disable*/
+import authorizationAPI from '@/apis/authorization'
+import { Toast } from '@/utils/helpers'
 
 export default {
   data() {
@@ -99,30 +65,52 @@ export default {
     }
   },
   methods: {
-    handleRegister(e) {
-      console.log('e', e)
-      console.log({ name: this.currentUser.name, email: this.currentUser.email, password: this.currentUser.password })
-      if (!this.currentUser.name.trim()) {
-        console.log('名字不能為空')
-      } else if (!this.currentUser.email) {
-        console.log('信箱不能空')
-      } else if (!this.currentUser.password) {
-        console.log('密碼不能為空')
-      } else if (!this.currentUser.passwordCheck) {
-        console.log('確認密碼不能為空')
-      }
+    async handleRegister(e) {
+      try {
+        if (!this.name.trim()) {
+          Toast.fire({
+            icon: 'warning',
+            title: '名字不能為空'
+          })
+          return
+        } else if (!this.email) {
+          Toast.fire({
+            icon: 'warning',
+            title: '信箱不能空'
+          })
+          return
+        } else if (!this.password) {
+          Toast.fire({
+            icon: 'warning',
+            title: '密碼不能為空'
+          })
+          return
+        }
 
-      if (this.currentUser.password !== this.currentUser.passwordCheck) {
-        console.log('密碼與確認密碼不一致')
+        if (this.password !== this.passwordCheck) {
+          Toast.fire({
+            icon: 'warning',
+            title: '密碼與確認密碼不一致'
+          })
+          return
+        }
+        const { data } = await authorizationAPI.signup({name: this.name,
+          email: this.email,
+          password: this.password,
+          passwordCheck: this.passwordCheck})
+
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.$router.push('/signin')
+      } catch (error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '註冊失敗，請稍候再試'
+        })
       }
-      // this.form = { ...this.form, name: this.name, email: this.email, password: this.password }
-      // console.log('this.from', this.form);
-      const data = {
-        name: this.currentUser.name,
-        email: this.currentUser.email,
-        password: this.currentUser.password,
-      }
-      console.log('data', JSON.stringify(data));
     },
   },
 }

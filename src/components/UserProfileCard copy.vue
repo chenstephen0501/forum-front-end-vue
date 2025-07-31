@@ -7,10 +7,8 @@
           width="300px"
           height="300px"
         > -->
-        <img :src="user.image | emptyUserImage"
+        <img :src="`https://picsum.photos/300/300?random=${Math.floor(Math.random() * 1000)}`"
         style="width: 300px;">
-        <!-- <img :src="`https://picsum.photos/300/300?random=${Math.floor(Math.random() * 1000)}`"
-        style="width: 300px;"> -->
       </div>
       <div class="col-md-8">
         <div class="card-body">
@@ -41,10 +39,10 @@
           </template>
           <template v-else>
             <button v-if="isFollowed" type="button" class="btn btn-danger"
-              @click.stop.prevent="deleteFollowing(user.id)">
+              @click.stop.prevent="deleteFollowing(currentUser.id)">
               取消追蹤
             </button>
-            <button v-else type="button" class="btn btn-primary" @click.stop.prevent="addFollowing(user.id)">
+            <button v-else type="button" class="btn btn-primary" @click.stop.prevent="addFollowing(currentUser.id)">
               追蹤
             </button>
           </template>
@@ -55,19 +53,14 @@
 </template>
 
 <script>
-import usersAPI from '@/apis/users'
-import { Toast } from '@/utils/helpers';
-// import { mapState } from 'vuex';
-import { emptyUserImageFilter } from '@/utils/mixins';
 
 export default {
-  mixins: [emptyUserImageFilter],
   props: {
     user: {
       type: Object,
       default: () => ({})
     },
-    initialIsFollowed: {
+    isFollowed: {
       type: Boolean,
       required: true,
     },
@@ -78,7 +71,7 @@ export default {
   },
   data() {
     return {
-      isFollowed: this.initialIsFollowed
+      // currentUser: this.currentUser,
     }
   },
   computed: {
@@ -86,51 +79,13 @@ export default {
       return this.user.id === this.currentUser.id
     }
   },
-  watch: {
-    initialIsFollowed(newVal) {
-      this.isFollowed = newVal
-    }
-  },
   methods: {
-    // async ad
-    async addFollowing(userId) {
-      try {
-        const { data } = await usersAPI.addFollowing(userId)
-        if (data.status !== 'success') {
-          throw new Error(data.message)
-        }
-
-        // this.followers.push(this.currentUser)
-        // this.user.followersLength++
-        this.isFollowed = true
-      } catch (error) {
-        console.log('error', error)
-
-        Toast.fire({
-          icon: 'error',
-          title: '無法追蹤，請稍候再試'
-        })
-      }
+    async addFollowing(currentUserId) {
+      this.$emit('after-add-following', currentUserId)
     },
-    async deleteFollowing(userId) {
-      try {
-        const { data } = await usersAPI.deleteFollowing(userId)
-        if (data.status !== 'success') {
-          throw new Error(data.message)
-        }
-
-        // this.followers = this.followers.filter(user => user.id !== this.currentUser.id)
-        // this.user.followersLength--
-        this.isFollowed = false
-      } catch (error) {
-        console.log('error', error)
-
-        Toast.fire({
-          icon: 'error',
-          title: '無法取消追蹤，請稍候再試'
-        })
-      }
-    },
+    async deleteFollowing(currentUserId) {
+      this.$emit('after-delete-following', currentUserId)
+    }
   }
 }
 </script>

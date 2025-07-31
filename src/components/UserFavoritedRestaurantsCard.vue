@@ -15,7 +15,7 @@
           height="60"
           class="mr-1 mb-1"
         > -->
-        <img :src="`https://picsum.photos/60/60?random=${Math.floor(Math.random() * 1000)}`"
+        <img :src="`https://picsum.photos/60/60?random=${Math.floor(Math.random() * 1000)}` | emptyImage"
         style="width: 60px;" class="mr-1 mb-1">
       </router-link>
     </div>
@@ -23,7 +23,10 @@
 </template>
 
 <script>
+import { emptyImageFilter } from '@/utils/mixins';
+
 export default {
+  mixins: [emptyImageFilter],
   props: {
     favoritedRestaurants: {
       type: Array,

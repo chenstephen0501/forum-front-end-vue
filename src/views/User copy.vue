@@ -1,7 +1,7 @@
 <template>
   <div class="container py-5">
     <!-- UserProfileCard -->
-    <UserProfileCard :user="user" :initial-is-followed="isFollowed" :current-user="currentUser" />
+    <UserProfileCard :user="user" :isFollowed="isFollowed" :current-user="currentUser" @after-add-following="afterAddFollowing" @after-delete-following="afterDeleteFollowing"/>
     <div class="row">
       <div class="col-4">
         <!-- UserFollowingsCard -->
@@ -99,23 +99,49 @@ export default {
         this.followings = Followings
         this.followers = Followers
         this.favoritedRestaurants = FavoritedRestaurants
-        // this.comments = Comments
-        // const uniqueComments = Array.from(
-        //   new Map(Comments.map(item => [item.RestaurantId, item])).values()
-        // );
-        const seen = new Set();
-        const uniqueComments = Comments.filter(item => {
-          if (seen.has(item.RestaurantId)) return false;
-          seen.add(item.RestaurantId);
-          return true;
-        });
-        this.comments = uniqueComments
+        this.comments = Comments
       } catch (error) {
         console.log('error', error)
 
         Toast.fire({
           icon: 'error',
           title: '無法取得個人資訊，請稍候再試'
+        })
+      }
+    },
+    async afterAddFollowing(currentUserId) {
+      try {
+        const { data } = await usersAPI.addFollowing(currentUserId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.followers.push(this.currentUser)
+        this.user.followersLength++
+        this.isFollowed = true
+      } catch (error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '無法追蹤，請稍候再試'
+        })
+      }
+    },
+    async afterDeleteFollowing(currentUserId) {
+      try {
+        const { data } = await usersAPI.deleteFollowing(currentUserId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.followers = this.followers.filter(user => user.id !== currentUserId)
+        this.user.followersLength--
+        this.isFollowed = true
+      } catch (error) {
+        console.log('error', error)
+
+        Toast.fire({
+          icon: 'error',
+          title: '無法取追蹤，請稍候再試'
         })
       }
     },
